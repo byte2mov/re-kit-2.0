@@ -29,3 +29,10 @@
 
 Once attached to the process, select the desired hooks and patches.
 
+
+## Screenshots
+
+
+![re-kit 2.0 Main Interface](https://imgur.com/qq7IeJd)
+![Applying Hooks](https://imgur.com/t9piRDH)
+
