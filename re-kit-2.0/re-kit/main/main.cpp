@@ -18,6 +18,7 @@ void counter_anti_inject()
 {
     hook_function(EnumProcessModulesEx, hk_EnumProcessModulesEx)
     hook_function(Module32First, hk_Module32First);
+    hook_function(SetProcessMitigationPolicy, hk_SetProcessMitigationPolicy);
 
     enable_hooks();
 }

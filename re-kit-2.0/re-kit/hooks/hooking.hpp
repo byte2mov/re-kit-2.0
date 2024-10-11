@@ -360,3 +360,29 @@ BOOL hk_Module32First(HANDLE hSnapshot, LPMODULEENTRY32 lpme) {
         }
 	}
 }
+
+typedef NTSTATUS(WINAPI* set_process_mitigation_policy_t)(HANDLE processHandle, PROCESS_MITIGATION_POLICY policyId, PPROCESS_MITIGATION_POLICY_DESCRIPTOR policy, SIZE_T bufferLength);
+
+set_process_mitigation_policy_t org_SetProcessMitigationPolicy = nullptr;
+
+NTSTATUS hk_SetProcessMitigationPolicy(PROCESS_MITIGATION_POLICY MitigationPolicy, PVOID lpBuffer, SIZE_T bufferLength) {
+
+	switch (MitigationPolicy) {
+
+    case ProcessSignaturePolicy: 
+
+		if (bufferLength != sizeof(PROCESS_MITIGATION_POLICY_DESCRIPTOR)) {
+            return STATUS_INVALID_PARAMETER;
+        }
+        
+        PROCESS_MITIGATION_BINARY_SIGNATURE_POLICY* policy = reinterpret_cast<PROCESS_MITIGATION_BINARY_SIGNATURE_POLICY*>(lpBuffer);
+
+        if (policy->MicrosoftSignedOnly) { // this policy is used to defend against dll injections.
+			ctx->add_log_message("SetProcessMitigationPolicy caught, MicrosoftSignedOnly resolved to False");
+			return STATUS_SUCCESS;
+        }
+
+        // https://www.ired.team/offensive-security/defense-evasion/preventing-3rd-party-dlls-from-injecting-into-your-processes
+
+    }
+}

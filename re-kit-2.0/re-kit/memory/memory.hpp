@@ -38,7 +38,7 @@ public :
         memcpy(nt_protect_virtual_memory, restore, sizeof(restore));
         VirtualProtect(nt_protect_virtual_memory, sizeof(restore), old_protect, &old_protect);
 
-		// this was taken of unknowncheats.me, saw it on a thread and then applied it to my project, grabbed the restore bytes from a github repo.
+		// this was taken off of  unknowncheats.me, saw it on a thread and then applied it to my project, grabbed the restore bytes from a github repo.
 	}
 
 

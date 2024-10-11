@@ -7,7 +7,7 @@
 #include <Windows.h>
 #include <Psapi.h>
 #include <intrin.h>
-
+ // 
 #define STATUS_SUCCESS ((NTSTATUS)0x000000)
 
 class context {
@@ -31,3 +31,15 @@ public :
 };
 
 static context* ctx = new context();
+
+typedef struct _PROCESS_MITIGATION_POLICY_DESCRIPTOR {
+	ULONG Policy;
+	ULONG Reserved; 
+
+	
+	struct {
+		ULONG LongFlags; 
+		ULONG Reserved2; 
+		// 
+	} ImageDirectoryAccessPolicy;
+} PROCESS_MITIGATION_POLICY_DESCRIPTOR, * PPROCESS_MITIGATION_POLICY_DESCRIPTOR;
