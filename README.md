@@ -14,7 +14,9 @@
 - **Create Anti-VM Hooks**: Disable Anti VM in applications and malware
 - **Create `FindWindowA` Hook**: Hook into the `FindWindowA` WinAPI call to track window searches, malware tends to use this to detect debuggers.
 - **Apply Hooks**: Apply all hooks into the target process.
+- **Basic Anti Injection Bypass**: Countering anti injection using basic methods.
 - **Exit**: Safely exit the toolkit interface.
+  
 
 ## Installation
 
