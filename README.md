@@ -33,8 +33,8 @@ Once attached to the process, select the desired hooks and patches.
 ## Screenshots
 
 
-[image](https://github.com/user-attachments/assets/f052c12e-f6af-4ab3-89a3-1133cbbd069c)
+![re-kit 2.0 Main Interface][image](https://github.com/user-attachments/assets/f052c12e-f6af-4ab3-89a3-1133cbbd069c)
 
-[image](https://github.com/user-attachments/assets/83231afe-3b61-44a6-b54f-c8ab5bfabaef)
+![re-kit 2.0 hook application][image](https://github.com/user-attachments/assets/83231afe-3b61-44a6-b54f-c8ab5bfabaef)
 
 
