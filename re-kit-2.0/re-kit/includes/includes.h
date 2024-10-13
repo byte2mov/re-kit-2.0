@@ -20,7 +20,9 @@ public :
 	HMODULE ntdll;
 	
 	bool create_menu = false;
-
+	bool block_threads = false;
+	bool hijack_threads = true;
+	uintptr_t hijacked_thread;
 	std::vector<std::string> log_messages;
 
 	void add_log_message(const char* format, ...) {

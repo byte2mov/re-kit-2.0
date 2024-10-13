@@ -36,19 +36,17 @@ DWORD WINAPI IsDebugged([[maybe_unused]] LPVOID lpParameter)
     }
 }
 
+DWORD WINAPI print_test([[maybe_unused]] LPVOID lpParameter) {
+    while (true) {
+		printf("Test message\n");
+    }
+}
 
 int main()
 {
 	MessageBoxA(nullptr, "Sample Application", "RE-KIT", MB_OK);
-	GlobalFindAtomA("RE-KIT");
-    if (IsDebugged()) {
-		MessageBoxA(nullptr, "Debugger detected via CheckExceptionPort!", "Debugging Detected", MB_OK | MB_ICONWARNING);
-    }
-    else {
-        std::cout << "No debugger detected." << std::endl;\
-		MessageBoxA(nullptr, "No debugger detected!", "Debugging Detected", MB_OK | MB_ICONWARNING);
-    }
-	
+	// Create a new thread to check for debugging windows
+	CreateThread(NULL, 0, print_test, NULL, 0, NULL);
 
-	MessageBoxA(nullptr, "Sample Application", "RE-KIT", MB_OK);
+    MessageBoxA(nullptr, "Sample Application", "RE-KIT", MB_OK);
 }

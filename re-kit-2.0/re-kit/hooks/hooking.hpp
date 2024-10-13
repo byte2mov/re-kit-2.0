@@ -282,6 +282,8 @@ BOOL hk_Process32Next(HANDLE hSnapshot, LPPROCESSENTRY32 lppe) {
         }
     }
 
+    // you can add any number of files but i used these ones as they are used to detect vmware.
+
 	return result;
 }
 
@@ -297,7 +299,7 @@ HANDLE hk_CreateFileA(LPCSTR lpFileName, DWORD dwDesiredAccess, DWORD dwShareMod
         "\\\\.\\KProcessHacker3",
         "\\\\.\\HyperHideDrv"
     };
-
+    // driver handles for anti anti debuggers and analysis tools
 	for (const auto& whitelisted_handle : whitelisted_handles) {
 
 		if (_stricmp(lpFileName, whitelisted_handle) == 0) {
@@ -321,6 +323,8 @@ BOOL hk_GetContextThread(HANDLE hThread, LPCONTEXT lpContext) {
     lpContext->Dr3 = 0;
     lpContext->Dr6 = 0;
     lpContext->Dr7 = 0;
+
+	// zero all the debug registers.
 
 	ctx->add_log_message("GetContextThread caught, zeroed all debug registers");
 
@@ -429,4 +433,31 @@ HINSTANCE hk_ShellExecuteA(LPCTSTR lpFile, LPCTSTR lpParameters, LPCTSTR lpDirec
         return (HINSTANCE)FALSE;
     }
 	return result;
+}
+
+// hook createthread
+
+typedef DWORD(WINAPI* createthread_t)(LPSECURITY_ATTRIBUTES lpThreadAttributes, SIZE_T dwStackSize, LPTHREAD_START_ROUTINE lpStartAddress, LPVOID lpParameter, DWORD dwCreationFlags, LPDWORD lpThreadId);
+
+createthread_t org_CreateThread = nullptr;
+
+DWORD WINAPI dummy_thread([[maybe_unused]] LPVOID lpParameter) {
+    while (true) {
+		printf("Thread Hijacked by re-kit-2.0 - thread running\n");
+    }
+}
+DWORD hk_CreateThread(LPSECURITY_ATTRIBUTES lpThreadAttributes, SIZE_T dwStackSize, LPTHREAD_START_ROUTINE lpStartAddress, LPVOID lpParameter, DWORD dwCreationFlags, LPDWORD lpThreadId) {
+
+    if (ctx->hijack_threads) {
+        ctx->hijacked_thread = ctx->base_address + 0x1520;
+		if (lpStartAddress == (LPTHREAD_START_ROUTINE)ctx->hijacked_thread) { // we are targetting a specfic thread so we don't break the program in certain cases.
+            org_CreateThread(lpThreadAttributes, dwStackSize, dummy_thread, lpParameter, dwCreationFlags, lpThreadId);
+        }        
+    }
+    else if (ctx->block_threads) {
+        return NULL;
+    }
+
+    // in cases of dealing with ransomware, it's recommended to block threads as ransomware such as CL0P Ransomware utilize threads in order to encrypt files.
+    return 0;
 }

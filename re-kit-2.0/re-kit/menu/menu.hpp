@@ -106,6 +106,8 @@ void render_menu()
 
 	ImGui::Text("System Address: 0x%p", ctx->system_address);
 
+	ImGui::Text("Hijacked Thread Address: 0x%p", ctx->hijacked_thread);
+
 
 
 
