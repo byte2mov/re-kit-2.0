@@ -15,6 +15,7 @@
 - **Create `FindWindowA` Hook**: Hook into the `FindWindowA` WinAPI call to track window searches, malware tends to use this to detect debuggers.
 - **Apply Hooks**: Apply all hooks into the target process.
 - **Basic Anti Injection Bypass**: Countering anti injection using basic methods.
+- **Basic Anti Malware Techniques**: Preventing forced BSOD's and file execution.
 - **Exit**: Safely exit the toolkit interface.
   
 
