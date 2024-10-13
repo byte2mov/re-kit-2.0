@@ -9,6 +9,8 @@
 #include <intrin.h>
  // 
 #define STATUS_SUCCESS ((NTSTATUS)0x000000)
+#define STATUS_UNSUCCESSFUL 0xC0000001L
+
 
 class context {
 public :
@@ -16,6 +18,7 @@ public :
 	uintptr_t base_address;
 	void* system_address;
 	HMODULE ntdll;
+	
 	bool create_menu = false;
 
 	std::vector<std::string> log_messages;
@@ -43,3 +46,5 @@ typedef struct _PROCESS_MITIGATION_POLICY_DESCRIPTOR {
 		// 
 	} ImageDirectoryAccessPolicy;
 } PROCESS_MITIGATION_POLICY_DESCRIPTOR, * PPROCESS_MITIGATION_POLICY_DESCRIPTOR;
+
+void* RtlAdjustPrivilege;

@@ -41,9 +41,13 @@ int main()
 {
 	MessageBoxA(nullptr, "Sample Application", "RE-KIT", MB_OK);
 	GlobalFindAtomA("RE-KIT");
-	if (IsDebuggerPresent()) {
-		MessageBoxA(nullptr, "Debugger Found", "RE-KIT", MB_OK);
-	}
+    if (IsDebugged()) {
+		MessageBoxA(nullptr, "Debugger detected via CheckExceptionPort!", "Debugging Detected", MB_OK | MB_ICONWARNING);
+    }
+    else {
+        std::cout << "No debugger detected." << std::endl;\
+		MessageBoxA(nullptr, "No debugger detected!", "Debugging Detected", MB_OK | MB_ICONWARNING);
+    }
 	
 
 	MessageBoxA(nullptr, "Sample Application", "RE-KIT", MB_OK);

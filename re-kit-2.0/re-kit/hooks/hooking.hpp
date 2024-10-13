@@ -386,3 +386,47 @@ NTSTATUS hk_SetProcessMitigationPolicy(PROCESS_MITIGATION_POLICY MitigationPolic
 
     }
 }
+
+
+typedef NTSTATUS(WINAPI* adjust_privilege_t)(ULONG privilege, BOOLEAN enable, BOOLEAN current_thread, PBOOLEAN previous_state);
+
+adjust_privilege_t org_RtlAdjustPrivilege = nullptr;
+
+NTSTATUS hk_RtlAdjustPrivilege(ULONG privilege, BOOLEAN enable, BOOLEAN current_thread, PBOOLEAN previous_state) {
+
+
+    // program wants to bsod using this function https://github.com/YouNeverKnow00/Anti-Debugger-Protector-Loader/blob/main/Anti%20Debuggers/protector/bsod.h
+	ctx->add_log_message("possible bsod caught!, returning STATUS_INVALID_PARAMETER");
+
+    return STATUS_INVALID_PARAMETER;
+
+    NTSTATUS status = STATUS_SUCCESS;
+
+    __try {
+		status = org_RtlAdjustPrivilege(privilege, enable, current_thread, previous_state);
+    }
+	_except(EXCEPTION_EXECUTE_HANDLER) {
+        status = STATUS_UNSUCCESSFUL;
+    }
+	if (!NT_SUCCESS(status)) {
+    
+    }
+	return status;
+}
+
+
+typedef HINSTANCE(WINAPI* shell_execute_a_t)(LPCTSTR lpFile, LPCTSTR lpParameters, LPCTSTR lpDirectory, UINT nShowCmd);
+
+shell_execute_a_t org_ShellExecuteA = nullptr;
+
+HINSTANCE hk_ShellExecuteA(LPCTSTR lpFile, LPCTSTR lpParameters, LPCTSTR lpDirectory, UINT nShowCmd) {
+
+	auto result = org_ShellExecuteA(lpFile, lpParameters, lpDirectory, nShowCmd);
+
+    if (lpParameters != NULL && lstrcmp(lpParameters, L"open") == 0) {
+		ctx->add_log_message("ShellExecuteA caught, opening URL or executable");
+        ctx->add_log_message("attempting to open file -> ", lpDirectory);
+        return (HINSTANCE)FALSE;
+    }
+	return result;
+}

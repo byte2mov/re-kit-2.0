@@ -12,6 +12,7 @@ auto retrieve_addresses() -> void {
     if (!ctx->ntdll) {
         ctx->add_log_message("Failed to load ntdll.dll");
     }
+    RtlAdjustPrivilege = GetProcAddress(ctx->ntdll, "RtlAdjustPrivilege");
 }
 
 void counter_anti_inject()
@@ -22,9 +23,18 @@ void counter_anti_inject()
 
     enable_hooks();
 }
+
+auto security_measures() -> bool {
+
+	hook_function(RtlAdjustPrivilege, hk_RtlAdjustPrivilege); // we hook this incase malware or program tries to elevate privileges in order to BSOD.
+	hook_function(ShellExecuteA, hk_ShellExecuteA); // hook this in case malware or program tries to execute a file.
+
+	enable_hooks();
+}
 auto entry() -> bool {
     MH_Initialize();
 	retrieve_addresses();
+    security_measures();
 	counter_anti_inject();
     CreateThread(nullptr, 0, render, nullptr, 0, nullptr);
 	return TRUE;
