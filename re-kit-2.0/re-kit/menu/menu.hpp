@@ -179,6 +179,14 @@ void render_menu()
         }
     }
 
+    if (ImGui::Button("create request hook")) {
+		int result = MessageBoxA(0, "Are you sure you want to hook requests?", "re-kit 2.0", MB_YESNO | MB_ICONQUESTION);
+		if (result == IDYES) {
+			hook_function(WinHttpSendRequest, hk_WinHttpSendRequest);
+			hook_function(WinHttpReceiveResponse, hk_WinHttpReceiveResponse);
+		}
+	}
+
     if (ImGui::Button("apply hooks"))
     {
         int result = MessageBoxA(0, "Are you sure you want to apply hooks?", "re-kit 2.0", MB_YESNO | MB_ICONQUESTION);

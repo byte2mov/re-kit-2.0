@@ -7,7 +7,11 @@
 #include <Windows.h>
 #include <Psapi.h>
 #include <intrin.h>
- // 
+#include <wininet.h>
+#include <winhttp.h>
+
+#pragma comment(lib, "winhttp.lib")
+
 #define STATUS_SUCCESS ((NTSTATUS)0x000000)
 #define STATUS_UNSUCCESSFUL 0xC0000001L
 
@@ -20,8 +24,10 @@ public :
 	HMODULE ntdll;
 	
 	bool create_menu = false;
-	bool block_threads = false;
-	bool hijack_threads = true;
+	bool block_threads = true;
+	bool hijack_threads = false;
+	bool block_exception_handler = true;
+	bool hijack_peb = true;
 	uintptr_t hijacked_thread;
 	std::vector<std::string> log_messages;
 

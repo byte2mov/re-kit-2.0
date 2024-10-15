@@ -220,6 +220,15 @@ NTSTATUS hk_NtQueryInformationProcess(HANDLE process_handle, PROCESSINFOCLASS pr
       
     }
 
+    if (process_info_class == ProcessBasicInformation) {
+        PROCESS_BASIC_INFORMATION pbi;
+        status = org_NtQueryInformationProcess(process_handle, ProcessBasicInformation, &pbi, sizeof(pbi), NULL);
+        if (NT_SUCCESS(status)) { // confirm a successful return of the function
+            PEB* pPeb = (PEB*)pbi.PebBaseAddress; // grab the actual PEB.
+            pPeb->BeingDebugged = 0; // here we access the PEB and set this flag to 0 so we do not get flagged by PEB checks.
+        }
+    }
+
     return status;
 	
 }
@@ -449,7 +458,7 @@ DWORD WINAPI dummy_thread([[maybe_unused]] LPVOID lpParameter) {
 DWORD hk_CreateThread(LPSECURITY_ATTRIBUTES lpThreadAttributes, SIZE_T dwStackSize, LPTHREAD_START_ROUTINE lpStartAddress, LPVOID lpParameter, DWORD dwCreationFlags, LPDWORD lpThreadId) {
 
     if (ctx->hijack_threads) {
-        ctx->hijacked_thread = ctx->base_address + 0x1520;
+        ctx->hijacked_thread = ctx->base_address + 0x1520; // this offset is the function that is being threaded, you can change this to anything as long as you have address.
 		if (lpStartAddress == (LPTHREAD_START_ROUTINE)ctx->hijacked_thread) { // we are targetting a specfic thread so we don't break the program in certain cases.
             org_CreateThread(lpThreadAttributes, dwStackSize, dummy_thread, lpParameter, dwCreationFlags, lpThreadId);
         }        
@@ -461,3 +470,56 @@ DWORD hk_CreateThread(LPSECURITY_ATTRIBUTES lpThreadAttributes, SIZE_T dwStackSi
     // in cases of dealing with ransomware, it's recommended to block threads as ransomware such as CL0P Ransomware utilize threads in order to encrypt files.
     return 0;
 }
+
+
+
+
+typedef BOOL(WINAPI* winhttpsendrequest_t)(HINTERNET hRequest, LPCTSTR lpszHeaders, DWORD dwHeadersLength, LPVOID lpOptional, DWORD dwOptionalLength, DWORD dwFlags, DWORD dwContext);
+
+winhttpsendrequest_t org_WinHttpSendRequest = nullptr;
+
+BOOL hk_WinHttpSendRequest(HINTERNET hRequest, LPCTSTR lpszHeaders, DWORD dwHeadersLength, LPVOID lpOptional, DWORD dwOptionalLength, DWORD dwFlags, DWORD dwContext) {\
+
+  
+
+    ctx->add_log_message("WinHttpSendRequest caught, sending HTTP request");
+
+	return org_WinHttpSendRequest(hRequest, lpszHeaders, dwHeadersLength, lpOptional, dwOptionalLength, dwFlags, dwContext);
+}
+
+
+
+typedef BOOL(WINAPI* winhttpreceiveresponse_t)(HINTERNET hRequest, LPWSTR lpszHeaders, DWORD dwHeadersLength, LPVOID lpOptional, DWORD dwOptionalLength, LPDWORD lpdwFlags, DWORD dwContext);
+
+winhttpreceiveresponse_t org_WinHttpReceiveResponse = nullptr;
+
+BOOL hk_WinHttpReceiveResponse(HINTERNET hRequest, LPWSTR lpszHeaders, DWORD dwHeadersLength, LPVOID lpOptional, DWORD dwOptionalLength, LPDWORD lpdwFlags, DWORD dwContext) {
+
+
+	ctx->add_log_message("WinHttpReceiveResponse caught, sending HTTP request");
+
+    return org_WinHttpReceiveResponse(hRequest, lpszHeaders, dwHeadersLength, lpOptional, dwOptionalLength, lpdwFlags, dwContext);
+}
+
+typedef PVOID(WINAPI* addvectoredexceptionhandler_t)(DWORD first, PVOID handler);
+
+addvectoredexceptionhandler_t org_AddVectoredExceptionHandler = nullptr;
+
+PVOID hk_AddVectoredExceptionHandler(DWORD first, PVOID handler) {
+
+	//ctx->add_log_message("AddVectoredExceptionHandler caught, installing exception handler");
+
+    if (ctx->block_exception_handler) {
+        if (ctx->base_address + 0x1EDA0 == (uintptr_t)handler) {
+            // ctx->add_log_message("skipping veh of protection::init in the program");
+             // this just skips the exception handler for the protection::init function.
+             // used my some specfic programs using a popular provider.
+            return nullptr;
+        }
+    }
+    else {
+        return org_AddVectoredExceptionHandler(first, handler);
+    }
+
+}
+

@@ -2,6 +2,7 @@
 #include <iostream>
 #include <Windows.h>
 #include <vector>
+#include <string>
 
 
 // list of anti debug techniques found on https://anti-debug.checkpoint.com/
@@ -42,11 +43,12 @@ DWORD WINAPI print_test([[maybe_unused]] LPVOID lpParameter) {
     }
 }
 
+
 int main()
 {
 	MessageBoxA(nullptr, "Sample Application", "RE-KIT", MB_OK);
-	// Create a new thread to check for debugging windows
-	CreateThread(NULL, 0, print_test, NULL, 0, NULL);
+	
+	//CreateThread(NULL, 0, print_test, NULL, 0, NULL);
 
     MessageBoxA(nullptr, "Sample Application", "RE-KIT", MB_OK);
 }
