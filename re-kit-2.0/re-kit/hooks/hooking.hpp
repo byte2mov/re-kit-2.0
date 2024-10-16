@@ -226,6 +226,7 @@ NTSTATUS hk_NtQueryInformationProcess(HANDLE process_handle, PROCESSINFOCLASS pr
         if (NT_SUCCESS(status)) { // confirm a successful return of the function
             PEB* pPeb = (PEB*)pbi.PebBaseAddress; // grab the actual PEB.
             pPeb->BeingDebugged = 0; // here we access the PEB and set this flag to 0 so we do not get flagged by PEB checks.
+          
         }
     }
 
@@ -455,6 +456,7 @@ DWORD WINAPI dummy_thread([[maybe_unused]] LPVOID lpParameter) {
 		printf("Thread Hijacked by re-kit-2.0 - thread running\n");
     }
 }
+
 DWORD hk_CreateThread(LPSECURITY_ATTRIBUTES lpThreadAttributes, SIZE_T dwStackSize, LPTHREAD_START_ROUTINE lpStartAddress, LPVOID lpParameter, DWORD dwCreationFlags, LPDWORD lpThreadId) {
 
     if (ctx->hijack_threads) {
@@ -466,9 +468,14 @@ DWORD hk_CreateThread(LPSECURITY_ATTRIBUTES lpThreadAttributes, SIZE_T dwStackSi
     else if (ctx->block_threads) {
         return NULL;
     }
-
+    else if (ctx->log_thread_address) {
+        uintptr_t relative_address = (uintptr_t)lpStartAddress - ctx->base_address;
+        if (relative_address <= 0xFFFFFFFF) { // ensure its a real offset
+            ctx->add_log_message("Thread created at address: 0x%p", relative_address);
+        }
+		return org_CreateThread(lpThreadAttributes, dwStackSize, lpStartAddress, lpParameter, dwCreationFlags, lpThreadId);
+    }
     // in cases of dealing with ransomware, it's recommended to block threads as ransomware such as CL0P Ransomware utilize threads in order to encrypt files.
-    return 0;
 }
 
 
@@ -509,11 +516,11 @@ PVOID hk_AddVectoredExceptionHandler(DWORD first, PVOID handler) {
 
 	//ctx->add_log_message("AddVectoredExceptionHandler caught, installing exception handler");
 
-    if (ctx->block_exception_handler) {
+    if (ctx->block_exception_handler) { // if the program uses this themida this will break.
         if (ctx->base_address + 0x1EDA0 == (uintptr_t)handler) {
             // ctx->add_log_message("skipping veh of protection::init in the program");
              // this just skips the exception handler for the protection::init function.
-             // used my some specfic programs using a popular provider.
+             // used by some specfic programs using a popular provider.
             return nullptr;
         }
     }
@@ -523,3 +530,22 @@ PVOID hk_AddVectoredExceptionHandler(DWORD first, PVOID handler) {
 
 }
 
+
+typedef BOOL(WINAPI* writeprocessmemory_t)(HANDLE hProcess, LPVOID lpBaseAddress, LPVOID lpBuffer, SIZE_T nSize, SIZE_T* lpNumberOfBytesWritten);
+
+writeprocessmemory_t org_WriteProcessMemory = nullptr;
+
+BOOL hk_WriteProcessMemory(HANDLE hProcess, LPVOID lpBaseAddress, LPVOID lpBuffer, SIZE_T nSize, SIZE_T* lpNumberOfBytesWritten) {
+
+   
+    ctx->add_log_message("caught memory writing, logging and dumping!");
+
+	ctx->add_log_message("write ddress: 0x%p", lpBaseAddress);
+	ctx->add_log_message("write size: 0x%p", nSize);
+	ctx->add_log_message("write buffer: 0x%p", lpBuffer);
+
+	ctx->save_to_disk(lpBuffer, nSize);
+
+	
+	return org_WriteProcessMemory(hProcess, lpBaseAddress, lpBuffer, nSize, lpNumberOfBytesWritten);
+}

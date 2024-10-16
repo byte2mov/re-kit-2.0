@@ -30,7 +30,7 @@ DWORD WINAPI IsDebugged([[maybe_unused]] LPVOID lpParameter)
             if (NULL != FindWindowA(sWndClass.c_str(), NULL))
             {
                 // Display a message box if a window is found
-                MessageBoxA(NULL, "A debugging window was detected!", "Debugging Detected", MB_OK | MB_ICONWARNING);
+                MessageBoxA(NULL, "A debugging window was detected!", "Debugging Detected!!", MB_OK | MB_ICONWARNING);
 
             }
         }
@@ -48,7 +48,7 @@ int main()
 {
 	MessageBoxA(nullptr, "Sample Application", "RE-KIT", MB_OK);
 	
-	//CreateThread(NULL, 0, print_test, NULL, 0, NULL);
+	CreateThread(NULL, 0, IsDebugged, NULL, 0, NULL);
 
     MessageBoxA(nullptr, "Sample Application", "RE-KIT", MB_OK);
 }

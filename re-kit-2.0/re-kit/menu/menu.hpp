@@ -83,7 +83,7 @@ void CreateOverlayWindow()
 
 void render_menu()
 {
-    // Retrieve screen dimensions
+
     RECT workArea{};
     SystemParametersInfo(SPI_GETWORKAREA, 0, &workArea, 0);
     const int screenWidth = workArea.right - workArea.left;
@@ -187,6 +187,17 @@ void render_menu()
 		}
 	}
 
+
+    if (ImGui::Button("RunPE/Memory hook")) {
+
+        int result = MessageBoxA(0, "Are you sure you want to dump DLLs?", "re-kit 2.0", MB_YESNO | MB_ICONQUESTION);
+
+        if (result == IDYES) {
+            hook_function(WriteProcessMemory, hk_WriteProcessMemory);
+        }
+    }
+
+
     if (ImGui::Button("apply hooks"))
     {
         int result = MessageBoxA(0, "Are you sure you want to apply hooks?", "re-kit 2.0", MB_YESNO | MB_ICONQUESTION);
@@ -197,7 +208,6 @@ void render_menu()
         }
 
     }
-
     if (ImGui::Button("Exit"))
     {
         int result = MessageBoxA(0, "Are you sure you want to exit?", "re-kit 2.0", MB_YESNO | MB_ICONQUESTION);
@@ -210,10 +220,68 @@ void render_menu()
 
     ImGui::Separator();
     ImGui::Text("re-kit 2.0 log:");
-    for (const auto& error : ctx->log_messages) {
-        ImGui::TextUnformatted(error.c_str());
+    ctx->create_menu = true;
+    ctx->process_log_queue();
+    int log_index = 0;
+
+    for (const auto& log : ctx->log_messages) {
+        ImGui::TextUnformatted(log.c_str());
+
+        if (ctx->copy_queue.size() <= log_index) {
+            ctx->copy_queue.push_back(""); 
+        }
+
+        ImGui::SameLine();
+        std::string button_id = "copy##" + std::to_string(log_index);
+        if (ImGui::Button(button_id.c_str())) {
+            ctx->copy_queue[log_index] = log;  
+            
+        
+        }
+
+        log_index++;
     }
 
+    ImGui::Separator();
+    if (!ctx->copy_queue.empty()) {
+       
+            std::string log_to_copy;
+            size_t remove_index = -1;
+
+            for (size_t i = 0; i < ctx->copy_queue.size(); ++i) {
+                if (!ctx->copy_queue[i].empty()) {
+                    log_to_copy = ctx->copy_queue[i];
+                    remove_index = i;
+                    break;
+                }
+            }
+
+            if (!log_to_copy.empty() && remove_index != -1) {
+                if (OpenClipboard(NULL)) {
+                    EmptyClipboard();
+                    size_t logSize = log_to_copy.size() + 1;  
+                    HGLOBAL hMem = GlobalAlloc(GMEM_MOVEABLE, logSize);
+
+                    if (hMem) {
+                        char* cptr = (char*)GlobalLock(hMem);
+                        memcpy(cptr, log_to_copy.c_str(), logSize); 
+                        GlobalUnlock(hMem);
+
+                        if (SetClipboardData(CF_TEXT, hMem) == NULL) {
+                            ctx->add_log_message("Failed to copy log to clipboard");
+                        }
+                        else {
+                        //    ctx->add_log_message("Successfully copied log to clipboard");
+                            ctx->copy_queue.erase(ctx->copy_queue.begin() + remove_index);
+                        }
+                    }
+                    CloseClipboard();
+                }
+                else {
+                    ctx->add_log_message("Failed to open clipboard");
+                }
+            }
+    }
 
     ImGui::End();
 }

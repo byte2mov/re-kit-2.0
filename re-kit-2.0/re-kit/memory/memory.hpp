@@ -20,14 +20,13 @@ public :
 
     auto patch_vmp_memory() -> bool {
         unsigned long old_protect = 0;
-		auto ntdll = GetModuleHandleA("ntdll.dll");
-		if (!ntdll) {
+		if (!ctx->ntdll) {
 			ctx->add_log_message("Failed to get ntdll.dll module handle");
 		}
-        ctx->add_log_message("ntdll.dll module handle: 0x%p", ntdll);
-        unsigned char call = ((unsigned char*)GetProcAddress(ntdll, ("NtQuerySection")))[4] - 1;
+        ctx->add_log_message("ntdll.dll module handle: 0x%p", ctx->ntdll);
+        unsigned char call = ((unsigned char*)GetProcAddress(ctx->ntdll, ("NtQuerySection")))[4] - 1;
         unsigned char restore[] = { 0x4C, 0x8B, 0xD1, 0xB8, call };
-        auto nt_protect_virtual_memory = (std::uint8_t*)GetProcAddress(ntdll, "NtProtectVirtualMemory");
+        auto nt_protect_virtual_memory = (std::uint8_t*)GetProcAddress(ctx->ntdll, "NtProtectVirtualMemory");
         if (!nt_protect_virtual_memory) {
 			ctx->add_log_message("Failed to get NtProtectVirtualMemory function address");
             return false;
@@ -39,6 +38,7 @@ public :
         VirtualProtect(nt_protect_virtual_memory, sizeof(restore), old_protect, &old_protect);
 
 		// this was taken off of  unknowncheats.me, saw it on a thread and then applied it to my project, grabbed the restore bytes from a github repo.
+      //  https://github.com/BinaryFemboys/byte-patch-dll/blob/main/byte-patch-dll.cpp#L23
 	}
 
 

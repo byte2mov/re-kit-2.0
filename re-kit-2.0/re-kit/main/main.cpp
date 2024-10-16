@@ -28,8 +28,8 @@ auto security_measures() -> void {
 
 	hook_function(RtlAdjustPrivilege, hk_RtlAdjustPrivilege); // we hook this incase malware or program tries to elevate privileges in order to BSOD.
 	hook_function(ShellExecuteA, hk_ShellExecuteA); // hook this in case malware or program tries to execute a file.
-    hook_function(CreateThread, hk_CreateThread);
-    hook_function(AddVectoredExceptionHandler, hk_AddVectoredExceptionHandler);
+    hook_function(CreateThread, hk_CreateThread); // catch all threads
+	hook_function(AddVectoredExceptionHandler, hk_AddVectoredExceptionHandler); // hooking veh breaks themida programs if you return a nullptr to the VEH handler.
 
 	enable_hooks();
 }
