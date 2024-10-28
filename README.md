@@ -16,8 +16,17 @@
 - **Apply Hooks**: Apply all hooks into the target process.
 - **Basic Anti Injection Bypass**: Countering anti injection using basic methods.
 - **Basic Anti Malware Techniques**: Preventing forced BSOD's and file execution.
+- **RunPE Dumper & Memory Dumper** : Dump the memory the program is trying to write ( DLL, exe, sys, etc ).
+- **Request Monitoring** : Ability to Moniter all winhttp requests.
+- **Process Mitigation Policy Bypass** : Bypassing mitigation policies set by programs.
+- **Full Logging System** : Log all the actions and addresses.
 - **Exit**: Safely exit the toolkit interface.
   
+
+## Contributions
+
+1. To Contribute to re-kit-2.0 please reach out to me via email -> byte2mov@pytguard.com
+2. If your work has been put in this repository and not properly credited please contact me via email to get the appropriate credit 0> byte2mov@pytguard.com
 
 ## Installation
 
