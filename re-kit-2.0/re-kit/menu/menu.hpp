@@ -6,6 +6,7 @@
 #include "../includes/imgui/imgui_impl_dx9.h"
 #include "../memory/memory.hpp"
 #include "../hooks/hooking.hpp"
+#include "../scanner/scanner.h"
 
 LPDIRECT3D9             g_pD3D = nullptr;
 LPDIRECT3DDEVICE9       g_pd3dDevice = nullptr;
@@ -108,6 +109,8 @@ void render_menu()
 
 	ImGui::Text("Hijacked Thread Address: 0x%p", ctx->hijacked_thread);
 
+	ImGui::Text("Packer Detected: %d", mem->find_packer().c_str());
+
 
 
 
@@ -208,6 +211,21 @@ void render_menu()
         }
 
     }
+
+    if (ImGui::Button("VMX Dumper")) {
+		int result = MessageBoxA(0, "Are you sure you want to dump VMX data?", "re-kit 2.0", MB_YESNO | MB_ICONQUESTION);
+		if (result == IDYES) {
+
+           uintptr_t scanned = scanner()->find_pattern("40 56 57 48 83").get();
+
+		   ctx->add_log_message("vmx address: 0x%p", scanned);
+
+           MH_CreateHook((LPVOID*)scanned, hk_sub_1CF39A7FDB0, (LPVOID*)&org_sub_1CF39A7FDB0);
+
+		   MH_EnableHook((LPVOID*)scanned);
+		}
+	}
+
     if (ImGui::Button("Exit"))
     {
         int result = MessageBoxA(0, "Are you sure you want to exit?", "re-kit 2.0", MB_YESNO | MB_ICONQUESTION);
@@ -217,6 +235,13 @@ void render_menu()
         }
 
     }
+
+    
+	ImGui::Spacing();
+	ImGui::Separator();
+	ImGui::Text("Sections:"); 
+
+
 
     ImGui::Separator();
     ImGui::Text("re-kit 2.0 log:");

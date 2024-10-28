@@ -54,6 +54,9 @@
     <ClCompile Include="re-kit\includes\imgui\imgui_widgets.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="re-kit\scanner\scanner.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="re-kit\includes\includes.h">
@@ -120,6 +123,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="re-kit\hooks\hooking.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="re-kit\scanner\scanner.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

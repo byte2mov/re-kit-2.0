@@ -534,7 +534,24 @@ PVOID hk_AddVectoredExceptionHandler(DWORD first, PVOID handler) {
 typedef BOOL(WINAPI* writeprocessmemory_t)(HANDLE hProcess, LPVOID lpBaseAddress, LPVOID lpBuffer, SIZE_T nSize, SIZE_T* lpNumberOfBytesWritten);
 
 writeprocessmemory_t org_WriteProcessMemory = nullptr;
-
+DWORD GetParentProcessId(DWORD processId) { // sub_140019F00
+    DWORD parentProcessId = 0;
+    HANDLE hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+    if (hSnapshot != INVALID_HANDLE_VALUE) {
+        PROCESSENTRY32 pe;
+        pe.dwSize = sizeof(PROCESSENTRY32);
+        if (Process32First(hSnapshot, &pe)) {
+            do {
+                if (pe.th32ProcessID == processId) {
+                    parentProcessId = pe.th32ParentProcessID;
+                    break;
+                }
+            } while (Process32Next(hSnapshot, &pe));
+        }
+        CloseHandle(hSnapshot);
+    }
+    return parentProcessId;
+}
 BOOL hk_WriteProcessMemory(HANDLE hProcess, LPVOID lpBaseAddress, LPVOID lpBuffer, SIZE_T nSize, SIZE_T* lpNumberOfBytesWritten) {
 
    
@@ -544,8 +561,98 @@ BOOL hk_WriteProcessMemory(HANDLE hProcess, LPVOID lpBaseAddress, LPVOID lpBuffe
 	ctx->add_log_message("write size: 0x%p", nSize);
 	ctx->add_log_message("write buffer: 0x%p", lpBuffer);
 
+    // Get the target process ID
+    DWORD processId = GetProcessId(hProcess);
+    ctx->add_log_message("Target Process ID: %lu", processId);
+
+    // Get the parent process ID
+    DWORD parentProcessId = GetParentProcessId(processId);
+    ctx->add_log_message("Parent Process ID: %lu", parentProcessId);
+
+	MessageBoxA(NULL, "Memory writing detected!", "re-kit-2.0", MB_OK);
+
 	ctx->save_to_disk(lpBuffer, nSize);
+
 
 	
 	return org_WriteProcessMemory(hProcess, lpBaseAddress, lpBuffer, nSize, lpNumberOfBytesWritten);
+}
+
+// hook CreateTool32Snapshot
+
+typedef HANDLE(WINAPI* createtoolhelp32snapshot_t)(DWORD dwFlags, DWORD th32ProcessID);
+
+createtoolhelp32snapshot_t org_CreateToolhelp32Snapshot = nullptr;
+
+HANDLE hk_CreateToolhelp32Snapshot(DWORD dwFlags, DWORD th32ProcessID) {
+
+	ctx->add_log_message("CreateToolhelp32Snapshot caught, creating snapshot");
+	//MessageBoxA(NULL, "Snapshot creation detected!", "re-kit-2.0", MB_OK);
+	return org_CreateToolhelp32Snapshot(dwFlags, th32ProcessID);
+}
+
+// hook char __fastcall sub_140019F00(__int64 a1)
+
+typedef char(__fastcall* sub_140019F00_t)(__int64 a1);
+
+sub_140019F00_t org_sub_140019F00 = nullptr;
+
+char __fastcall hk_sub_140019F00(__int64 a1) {
+
+	//ctx->add_log_message("sub_140019F00 caught, running function");
+	MessageBoxA(NULL, "Function execution detected!", "re-kit-2.0", MB_OK);
+    return TRUE;
+}
+
+// hook _BOOL8 __fastcall sub_14001B820(unsigned __int8 *a1)
+
+typedef bool(__fastcall* sub_14001B830_t)(unsigned __int8* a1);
+
+sub_14001B830_t org_sub_1B830 = nullptr;
+
+bool __fastcall hk_sub_14001B830(unsigned __int8* a1) {
+    return false;
+}
+
+// 0x7FDB0
+
+
+// hook this char __fastcall sub_1CF39A7FDB0(__int64 a1, unsigned int a2)
+
+typedef char(__fastcall* sub_1CF39A7FDB0_t)(__int64 a1, unsigned int a2);
+
+sub_1CF39A7FDB0_t org_sub_1CF39A7FDB0 = nullptr;
+
+char __fastcall hk_sub_1CF39A7FDB0(__int64 a1, unsigned int a2) {
+
+	//ctx->add_log_message("sub_1CF39A7FDB0 caught, running function");
+	MessageBoxA(NULL, "Function Injection detected!", "re-kit-2.0", MB_OK);
+    // write a1 and a2 to disk
+
+	ctx->add_log_message("write a1: 0x%p", a1);
+	//ctx->add_log_message("write a2: 0x%p", a2);
+
+
+	ctx->save_to_disk(&a1, sizeof(a1));
+	//ctx->save_to_disk(&a2, sizeof(a2));
+    return TRUE;
+}
+
+// hook CreateProcessA
+
+typedef BOOL(WINAPI* createprocessa_t)(LPCSTR lpApplicationName, LPSTR lpCommandLine, LPSECURITY_ATTRIBUTES lpProcessAttributes, LPSECURITY_ATTRIBUTES lpThreadAttributes, BOOL bInheritHandles, DWORD dwCreationFlags, LPVOID lpEnvironment, LPCSTR lpCurrentDirectory, LPSTARTUPINFOA lpStartupInfo, LPPROCESS_INFORMATION lpProcessInformation);
+
+createprocessa_t org_CreateProcessA = nullptr;
+
+BOOL hk_CreateProcessA(LPCSTR lpApplicationName, LPSTR lpCommandLine, LPSECURITY_ATTRIBUTES lpProcessAttributes, LPSECURITY_ATTRIBUTES lpThreadAttributes, BOOL bInheritHandles, DWORD dwCreationFlags, LPVOID lpEnvironment, LPCSTR lpCurrentDirectory, LPSTARTUPINFOA lpStartupInfo, LPPROCESS_INFORMATION lpProcessInformation) {
+
+    ctx->add_log_message("CreateProcessA caught, creating process");
+	MessageBoxA(NULL, "Process creation detected!", "re-kit-2.0", MB_OK);
+    // output all information in messagebox
+	 MessageBoxA(NULL, lpApplicationName, "Application Name", MB_OK);
+	 MessageBoxA(NULL, lpCommandLine, "Command Line", MB_OK);
+	 MessageBoxA(NULL, lpCurrentDirectory, "Current Directory", MB_OK);
+	// MessageBoxA(NULL, lpEnvironment, "Environment Variables", MB_OK);
+	 MessageBoxA(NULL, lpStartupInfo->lpDesktop, "Desktop", MB_OK);
+	 MessageBoxA(NULL, lpStartupInfo->lpTitle, "Title", MB_OK);
 }

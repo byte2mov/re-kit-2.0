@@ -153,6 +153,7 @@
     <ClCompile Include="re-kit\includes\minhook\src\hook.c" />
     <ClCompile Include="re-kit\includes\minhook\src\trampoline.c" />
     <ClCompile Include="re-kit\main\main.cpp" />
+    <ClCompile Include="re-kit\scanner\scanner.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="re-kit\hooks\hooking.hpp" />
@@ -177,6 +178,7 @@
     <ClInclude Include="re-kit\includes\syscall\syscall.hpp" />
     <ClInclude Include="re-kit\memory\memory.hpp" />
     <ClInclude Include="re-kit\menu\menu.hpp" />
+    <ClInclude Include="re-kit\scanner\scanner.h" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="re-kit\includes\capstone.lib" />

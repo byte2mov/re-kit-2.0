@@ -31,6 +31,7 @@ public :
 	bool log_thread_address = true;
 	bool hijack_peb = true;
 	uintptr_t hijacked_thread;
+	std::string packer;
 	std::vector<std::string> log_messages;
 	std::queue<std::string> log_queue;
 	std::deque<std::string> copy_queue;

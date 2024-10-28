@@ -41,6 +41,28 @@ public :
       //  https://github.com/BinaryFemboys/byte-patch-dll/blob/main/byte-patch-dll.cpp#L23
 	}
 
+    auto find_packer() -> std::string {
+
+		auto dos_header = (IMAGE_DOS_HEADER*)ctx->base_address;
+
+		auto nt_header = (IMAGE_NT_HEADERS*)((std::uint8_t*)ctx->base_address + dos_header->e_lfanew);
+
+		auto section_header = (IMAGE_SECTION_HEADER*)((std::uint8_t*)ctx->base_address + dos_header->e_lfanew + sizeof(IMAGE_NT_HEADERS));
+		for (int i = 0; i < nt_header->FileHeader.NumberOfSections; ++i) {
+			if (section_header[i].Characteristics & IMAGE_SCN_MEM_EXECUTE) {
+				std::string section_name((char*)(ctx->base_address + section_header[i].Name), 8);
+				if (section_name == ".themida") {
+					return "Packer: Themida 3.XX";
+				}
+                if (section_name.find(".vmp")) {
+                    return "Packer: VMProtect";
+                }
+               
+			}
+		}
+		return "No packer Detected";
+	}
+
 
 };
 static memory* mem = new memory();
