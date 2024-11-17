@@ -22,8 +22,22 @@
 - **Full Logging System** : Log all the actions and addresses.
 - **Exit**: Safely exit the toolkit interface.
   
+Here’s a more professional version for your GitHub credits section:
+
+---
+
+## Credits
+
+The name of this project and the graphical user interface (GUI) design were inspired by [Zer0Condition's ReverseKit](https://github.com/zer0condition/ReverseKit). I greatly admired the structure and aesthetic of ReverseKit, which influenced this project.
+
+Special thanks to Zer0Condition for their exceptional work on ReverseKit.
+
+---
+
+
 
 ## Contributions
+
 
 1. To Contribute to re-kit-2.0 please reach out to me via email -> byte2mov@pytguard.com
 2. If your work has been put in this repository and not properly credited please contact me via email to get the appropriate credit 0> byte2mov@pytguard.com
