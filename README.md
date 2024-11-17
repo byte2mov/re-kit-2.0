@@ -22,7 +22,6 @@
 - **Full Logging System** : Log all the actions and addresses.
 - **Exit**: Safely exit the toolkit interface.
   
-Here’s a more professional version for your GitHub credits section:
 
 ---
 
